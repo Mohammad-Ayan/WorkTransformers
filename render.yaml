@@ -10,8 +10,7 @@ services:
       - key: GEMINI_API_KEY
         sync: false
 
-staticSites:
- - type: web
+  - type: web
     name: canvas-frontend
     env: static
     rootDir: .
