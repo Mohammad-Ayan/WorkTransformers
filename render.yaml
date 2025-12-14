@@ -11,9 +11,10 @@ services:
         sync: false
 
 staticSites:
-  - name: canvas-frontend
+ - type: web
+    name: canvas-frontend
+    env: static
     rootDir: .
     buildCommand: "npm install && npm run build"
-    publishDir: dist
     staticPublishPath: dist
     autoDeploy: true
