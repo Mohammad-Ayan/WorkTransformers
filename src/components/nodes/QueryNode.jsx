@@ -7,7 +7,7 @@ export default function QueryNode({ id }) {
   const [result, setResult] = useState("");
   const [query, setQuery] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   const resultRef = useRef(null);
   const { getNodes, getEdges, setNodes } = useReactFlow();
 
@@ -16,7 +16,7 @@ export default function QueryNode({ id }) {
     if (result && resultRef.current) {
       const contentHeight = resultRef.current.scrollHeight;
       const newHeight = Math.max(200, Math.min(contentHeight + 120, 600));
-      
+
       setNodes((nodes) =>
         nodes.map((node) => {
           if (node.id === id) {
@@ -57,56 +57,60 @@ export default function QueryNode({ id }) {
       .map(n => n.data.src)
       .filter(Boolean);
 
-      console.log("DEBUG → Edges:", getEdges());
-console.log("DEBUG → Nodes:", getNodes());
-console.log("DEBUG → Incoming Edges:", incomingEdges);
-console.log("DEBUG → Connected Node Objects:", connectedNodes);
-console.log("DEBUG → TEXT:", textItems);
-console.log("DEBUG → SHAPES:", shapeItems);
-console.log("DEBUG → IMAGES:", images);
+    console.log("DEBUG → Edges:", getEdges());
+    console.log("DEBUG → Nodes:", getNodes());
+    console.log("DEBUG → Incoming Edges:", incomingEdges);
+    console.log("DEBUG → Connected Node Objects:", connectedNodes);
+    console.log("DEBUG → TEXT:", textItems);
+    console.log("DEBUG → SHAPES:", shapeItems);
+    console.log("DEBUG → IMAGES:", images);
 
     return { textItems, shapeItems, images };
   };
 
   const sendToAI = async () => {
-  if (!query.trim()) return;
+    if (!query.trim()) return;
 
-  setLoading(true);
-  setResult("");
-  setIsExpanded(true);
+    setLoading(true);
+    setResult("");
+    setIsExpanded(true);
 
-  const ctx = getConnectedContext();
-  console.log("📝 CONTEXT SENT →", ctx);
+    const ctx = getConnectedContext();
+    console.log("📝 CONTEXT SENT →", ctx);
 
-  const form = new FormData();
-  form.append("query", query);
-  form.append("context", [...ctx.textItems, ...ctx.shapeItems].join("\n\n"));
+    const form = new FormData();
+    form.append("query", query);
+    form.append("context", [...ctx.textItems, ...ctx.shapeItems].join("\n\n"));
 
-  const response = await fetch("http://localhost:5000/api/ai", {
-    method: "POST",
-    body: form,
-  });
+    const API_BASE =
+      import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
+    fetch(`${API_BASE}/api/ai`, {
+      method: "POST",
+      body: formData,
+    });
 
-  let full = "";
 
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
 
-    const txt = decoder.decode(value);
-    console.log("🔹 CHUNK:", txt);
+    let full = "";
 
-    full += txt;
-    setResult(prev => prev + txt);
-  }
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
 
-  console.log("💡 FINAL AI RESPONSE:", full);
+      const txt = decoder.decode(value);
+      console.log("🔹 CHUNK:", txt);
 
-  setLoading(false);
-};
+      full += txt;
+      setResult(prev => prev + txt);
+    }
+
+    console.log("💡 FINAL AI RESPONSE:", full);
+
+    setLoading(false);
+  };
 
 
   const toggleExpand = () => {
@@ -116,7 +120,7 @@ console.log("DEBUG → IMAGES:", images);
   return (
     <ResizableWrapper id={id} minWidth={240} minHeight={130}>
       <div className="p-3 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-900 shadow-lg rounded-xl w-full h-full flex flex-col border-2 border-purple-300 dark:border-purple-700">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
@@ -153,7 +157,7 @@ console.log("DEBUG → IMAGES:", images);
         </button>
 
         {/* Response Area */}
-        <div 
+        <div
           ref={resultRef}
           className="mt-3 p-3 text-sm whitespace-pre-wrap flex-1 overflow-auto bg-white dark:bg-gray-800 rounded-lg border border-purple-200 dark:border-purple-700 min-h-[60px]"
         >
@@ -176,13 +180,13 @@ console.log("DEBUG → IMAGES:", images);
         </div>
       </div>
 
-      <Handle 
-        type="target" 
+      <Handle
+        type="target"
         position={Position.Top}
         className="w-3 h-3 bg-purple-500"
       />
-      <Handle 
-        type="source" 
+      <Handle
+        type="source"
         position={Position.Bottom}
         className="w-3 h-3 bg-pink-500"
       />
